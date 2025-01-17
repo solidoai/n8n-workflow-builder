@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server for programmatically creating and managing n8n workflows.
 
+<a href="https://glama.ai/mcp/servers/fhoynrlnpp"><img width="380" height="200" src="https://glama.ai/mcp/servers/fhoynrlnpp/badge" alt="n8n Workflow Builder Server MCP server" /></a>
+
 ## Features
 - Create workflows with nodes and connections
 - Validate workflow specifications
