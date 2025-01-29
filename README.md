@@ -1,4 +1,5 @@
 # n8n Workflow Builder MCP Server
+[![smithery badge](https://smithery.ai/badge/n8n-workflow-builder)](https://smithery.ai/server/n8n-workflow-builder)
 
 A Model Context Protocol (MCP) server for programmatically creating and managing n8n workflows.
 
@@ -12,6 +13,15 @@ A Model Context Protocol (MCP) server for programmatically creating and managing
 
 ## Installation
 
+### Installing via Smithery
+
+To install n8n Workflow Builder for Claude Desktop automatically via [Smithery](https://smithery.ai/server/n8n-workflow-builder):
+
+```bash
+npx -y @smithery/cli install n8n-workflow-builder --client claude
+```
+
+### Manual Installation
 1. Clone the repository:
 ```bash
 git clone https://github.com/[your-username]/n8n-workflow-builder.git
