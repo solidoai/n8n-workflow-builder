@@ -109,7 +109,7 @@ If you prefer to install the server manually, follow these steps:
     }
     ```
 
-    -   **`command`:**  The command to run the server (`node`).
+    -   **`command`:**  The command to run the server (`npx`).
     -   **`args`:**  The path to the `index.js` file.  **Important:**  Use the correct path to `src/index.js`.
     -   **`env`:**
         -   **`N8N_HOST`:** The base URL of your n8n instance (see NPX instructions above).
