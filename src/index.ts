@@ -1,219 +1,160 @@
 #!/usr/bin/env node
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  McpError,
-  ErrorCode
-} from '@modelcontextprotocol/sdk/types.js';
-
-class N8NWorkflowBuilder {
-  private nodes: any[];
-  private connections: any[];
-  private nextPosition: { x: number, y: number };
-
-  constructor() {
-    this.nodes = [];
-    this.connections = [];
-    this.nextPosition = { x: 100, y: 100 };
-  }
-
-  addNode(nodeType: string, name: string, parameters: any) {
-    const node = {
-      type: nodeType,
-      name: name,
-      parameters: parameters,
-      position: { ...this.nextPosition }
-    };
-    this.nodes.push(node);
-    this.nextPosition.x += 200;
-    return name;
-  }
-
-  connectNodes(source: string, target: string, sourceOutput = 0, targetInput = 0) {
-    this.connections.push({
-      source_node: source,
-      target_node: target,
-      source_output: sourceOutput,
-      target_input: targetInput
-    });
-  }
-
-  exportWorkflow(): any {
-    interface WorkflowConnection {
-      node: string;
-      type: string;
-      index: number;
-      sourceNode: string;
-      sourceIndex: number;
-    }
-
-    interface Workflow {
-      nodes: any[];
-      connections: {
-        main: WorkflowConnection[];
-      };
-    }
-
-    const workflow: Workflow = {
-      nodes: this.nodes,
-      connections: { main: [] }
-    };
-
-    for (const conn of this.connections) {
-      const connection: WorkflowConnection = {
-        node: conn.target_node,
-        type: 'main',
-        index: conn.target_input,
-        sourceNode: conn.source_node,
-        sourceIndex: conn.source_output
-      };
-      workflow.connections.main.push(connection);
-    }
-
-    return workflow;
-  }
-}
+import { Server } from '@modelcontextprotocol/sdk/server';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio';
+import { CallToolRequestSchema, ListToolsRequestSchema, McpError, ErrorCode } from '@modelcontextprotocol/sdk/types';
+import * as n8nApi from './services/n8nApi';
+import { WorkflowBuilder } from './services/workflowBuilder';
+import { validateWorkflowSpec } from './utils/validation';
 
 class N8NWorkflowServer {
   private server: Server;
 
   constructor() {
     this.server = new Server(
-      {
-        name: 'n8n-workflow-builder',
-        version: '0.1.0'
-      },
-      {
-        capabilities: {
-          resources: {},
-          tools: {}
-        }
-      }
+      { name: 'n8n-workflow-builder', version: '0.2.0' },
+      { capabilities: { tools: {}, resources: {} } }
     );
-
     this.setupToolHandlers();
     this.server.onerror = (error) => console.error('[MCP Error]', error);
   }
 
   private setupToolHandlers() {
+    // Register available tools
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [{
-        name: 'create_workflow',
-        description: 'Create and configure n8n workflows programmatically',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            nodes: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  type: { type: 'string' },
-                  name: { type: 'string' },
-                  parameters: { type: 'object' }
-                },
-                required: ['type', 'name']
+      tools: [
+        {
+          name: 'list_workflows',
+          description: 'List all workflows from n8n',
+          inputSchema: { type: 'object', properties: {} }
+        },
+        {
+          name: 'create_workflow',
+          description: 'Create a new workflow in n8n',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              nodes: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    type: { type: 'string' },
+                    name: { type: 'string' },
+                    parameters: { type: 'object' }
+                  },
+                  required: ['type', 'name']
+                }
+              },
+              connections: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    source: { type: 'string' },
+                    target: { type: 'string' },
+                    sourceOutput: { type: 'number', default: 0 },
+                    targetInput: { type: 'number', default: 0 }
+                  },
+                  required: ['source', 'target']
+                }
               }
             },
-            connections: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  source: { type: 'string' },
-                  target: { type: 'string' },
-                  sourceOutput: { type: 'number', default: 0 },
-                  targetInput: { type: 'number', default: 0 }
-                },
-                required: ['source', 'target']
-              }
-            }
-          },
-          required: ['nodes']
+            required: ['nodes']
+          }
+        },
+        {
+          name: 'get_workflow',
+          description: 'Get a workflow by ID',
+          inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
+        },
+        {
+          name: 'update_workflow',
+          description: 'Update an existing workflow',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              nodes: { type: 'array' },
+              connections: { type: 'array' }
+            },
+            required: ['id', 'nodes']
+          }
+        },
+        {
+          name: 'delete_workflow',
+          description: 'Delete a workflow by ID',
+          inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
+        },
+        {
+          name: 'activate_workflow',
+          description: 'Activate a workflow by ID',
+          inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
+        },
+        {
+          name: 'deactivate_workflow',
+          description: 'Deactivate a workflow by ID',
+          inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
         }
-      }]
+      ]
     }));
 
-    interface WorkflowNode {
-      type: string;
-      name: string;
-      parameters?: Record<string, any>;
-    }
-
-    interface WorkflowConnectionSpec {
-      source: string;
-      target: string;
-      sourceOutput?: number;
-      targetInput?: number;
-    }
-
-    interface WorkflowSpec {
-      nodes: WorkflowNode[];
-      connections?: WorkflowConnectionSpec[];
-    }
-
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      if (request.params.name !== 'create_workflow') {
-        throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
-      }
-
+      const { name, arguments: args } = request.params;
       try {
-        const builder = new N8NWorkflowBuilder();
-        function isWorkflowSpec(obj: any): obj is WorkflowSpec {
-          return obj &&
-            typeof obj === 'object' &&
-            Array.isArray(obj.nodes) &&
-            obj.nodes.every((node: any) =>
-              typeof node === 'object' &&
-              typeof node.type === 'string' &&
-              typeof node.name === 'string'
-            ) &&
-            (!obj.connections || (
-              Array.isArray(obj.connections) &&
-              obj.connections.every((conn: any) =>
-                typeof conn === 'object' &&
-                typeof conn.source === 'string' &&
-                typeof conn.target === 'string'
-              )
-            ));
+        switch (name) {
+          case 'list_workflows': {
+            const workflows = await n8nApi.listWorkflows();
+            return { content: [{ type: 'text', text: JSON.stringify(workflows, null, 2) }] };
+          }
+          case 'create_workflow': {
+            if (!validateWorkflowSpec(args)) {
+              throw new McpError(ErrorCode.InvalidParams, 'Invalid workflow specification');
+            }
+            const builder = new WorkflowBuilder();
+            for (const node of args.nodes) {
+              builder.addNode(node);
+            }
+            if (args.connections) {
+              for (const conn of args.connections) {
+                builder.connectNodes(conn);
+              }
+            }
+            const workflowSpec = builder.exportWorkflow();
+            if (args.name) {
+              workflowSpec.name = args.name;
+            }
+            const created = await n8nApi.createWorkflow(workflowSpec);
+            return { content: [{ type: 'text', text: JSON.stringify(created, null, 2) }] };
+          }
+          case 'get_workflow': {
+            const workflow = await n8nApi.getWorkflow(args.id);
+            return { content: [{ type: 'text', text: JSON.stringify(workflow, null, 2) }] };
+          }
+          case 'update_workflow': {
+            if (!validateWorkflowSpec(args)) {
+              throw new McpError(ErrorCode.InvalidParams, 'Invalid workflow specification');
+            }
+            const updated = await n8nApi.updateWorkflow(args.id, args);
+            return { content: [{ type: 'text', text: JSON.stringify(updated, null, 2) }] };
+          }
+          case 'delete_workflow': {
+            const result = await n8nApi.deleteWorkflow(args.id);
+            return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+          }
+          case 'activate_workflow': {
+            const activated = await n8nApi.activateWorkflow(args.id);
+            return { content: [{ type: 'text', text: JSON.stringify(activated, null, 2) }] };
+          }
+          case 'deactivate_workflow': {
+            const deactivated = await n8nApi.deactivateWorkflow(args.id);
+            return { content: [{ type: 'text', text: JSON.stringify(deactivated, null, 2) }] };
+          }
+          default:
+            throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
         }
-
-        const args = request.params.arguments;
-        if (!isWorkflowSpec(args)) {
-          throw new McpError(
-            ErrorCode.InvalidParams,
-            'Invalid workflow specification: must include nodes array with type and name properties'
-          );
-        }
-
-        const { nodes, connections } = args;
-
-        for (const node of nodes) {
-          builder.addNode(node.type, node.name, node.parameters || {});
-        }
-
-        for (const conn of connections || []) {
-          builder.connectNodes(
-            conn.source,
-            conn.target,
-            conn.sourceOutput,
-            conn.targetInput
-          );
-        }
-
-        return {
-          content: [{
-            type: 'text',
-            text: JSON.stringify(builder.exportWorkflow(), null, 2)
-          }]
-        };
       } catch (error) {
-        throw new McpError(
-          ErrorCode.InternalError,
-          `Workflow creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
+        throw new McpError(ErrorCode.InternalError, `Workflow operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     });
   }
