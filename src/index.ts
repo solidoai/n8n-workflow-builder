@@ -24,11 +24,13 @@ class N8NWorkflowServer {
       tools: [
         {
           name: 'list_workflows',
+          enabled: true,
           description: 'List all workflows from n8n',
           inputSchema: { type: 'object', properties: {} }
         },
         {
           name: 'create_workflow',
+          enabled: true,
           description: 'Create a new workflow in n8n',
           inputSchema: {
             type: 'object',
@@ -65,11 +67,13 @@ class N8NWorkflowServer {
         },
         {
           name: 'get_workflow',
+          enabled: true,
           description: 'Get a workflow by ID',
           inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
         },
         {
           name: 'update_workflow',
+          enabled: true,
           description: 'Update an existing workflow',
           inputSchema: {
             type: 'object',
@@ -83,16 +87,19 @@ class N8NWorkflowServer {
         },
         {
           name: 'delete_workflow',
+          enabled: true,
           description: 'Delete a workflow by ID',
           inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
         },
         {
           name: 'activate_workflow',
+          enabled: true,
           description: 'Activate a workflow by ID',
           inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
         },
         {
           name: 'deactivate_workflow',
+          enabled: true,
           description: 'Deactivate a workflow by ID',
           inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
         }
