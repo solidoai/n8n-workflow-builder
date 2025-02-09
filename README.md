@@ -60,6 +60,14 @@ A Model Context Protocol (MCP) server for programmatically creating and managing
     npm install
     ```
 
+3.  **Install as an MCP server:**
+
+    ```bash
+    npx @makafeli/n8n-workflow-builder
+    ```
+    Then, add the server to your MCP configuration (usually `cline_mcp_settings.json`) as described in the [Configuration](#configuration) section.
+
+
 3.  **Start the server:**
 
     ```bash
@@ -67,9 +75,6 @@ A Model Context Protocol (MCP) server for programmatically creating and managing
     ```
 
     **Note:** After updating the server, you need to restart it for the changes to take effect.
-
-### Docker
-Docker support is planned but not yet fully implemented. A `Dockerfile` is present in the repository, but detailed instructions for building and running the Docker image are not yet available.
 
 ## Usage
 
@@ -233,7 +238,7 @@ To use this MCP server, you need to add it to your MCP configuration file (usual
 {
   "n8n-workflow-builder": {
     "command": "node",
-    "args": ["/path/to/n8n-workflow-builder/src/index.js"],
+    "args": ["/root/n8n-workflow-builder/src/index.js"],
     "env": {
       "N8N_HOST": "http://your-n8n-instance:5678",
       "N8N_API_KEY": "your-n8n-api-key"

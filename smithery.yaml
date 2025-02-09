@@ -1,13 +1,21 @@
-# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
-
-startCommand:
-  type: stdio
-  configSchema:
-    # JSON Schema defining the configuration options for the MCP.
-    type: object
-    required: []
-    properties: {}
-  commandFunction:
-    # A function that produces the CLI command to start the MCP on stdio.
-    |-
-    (config) => ({command: 'node', args: ['dist/index.js']})
+name: n8n-workflow-builder
+displayName: n8n Workflow Builder
+description: An MCP server for programmatically creating and managing n8n workflows.
+category: productivity
+publisher: makafeli
+repository: https://github.com/makafeli/n8n-workflow-builder
+license: MIT
+keywords:
+  - n8n
+  - workflow
+  - automation
+  - mcp
+  - model context protocol
+  - server
+  - api
+install:
+  - npx:
+      package: "@makafeli/n8n-workflow-builder"
+      command: n8n-workflow-builder
+      args: []
+      env: {}
