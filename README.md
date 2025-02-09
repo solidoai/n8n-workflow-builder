@@ -9,10 +9,9 @@ A Model Context Protocol (MCP) server for programmatically creating and managing
 ## Table of Contents
 
 - [Features](#features)
-- [Installation](#installation)
-  - [Prerequisites](#prerequisites)
-  - [Local Development (npm)](#local-development-npm)
-  - [Docker](#docker)
+- [Installation and Configuration](#installation-and-configuration)
+  - [NPX (Recommended)](#npx-recommended)
+  - [NPM (Manual)](#npm-manual)
 - [Usage](#usage)
   - [`create_workflow`](#create_workflow)
   - [`create_workflow_and_activate`](#create_workflow_and_activate)
@@ -21,7 +20,6 @@ A Model Context Protocol (MCP) server for programmatically creating and managing
   - [`deactivate_workflow`](#deactivate_workflow)
   - [`get_workflow`](#get_workflow)
   - [`delete_workflow`](#delete_workflow)
-- [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [Security Considerations](#security-considerations)
@@ -37,38 +35,87 @@ A Model Context Protocol (MCP) server for programmatically creating and managing
 - Update existing workflows.
 - Get and delete workflows.
 
-## Installation
+## Installation and Configuration
 
-### Prerequisites
+This server can be installed and configured in two ways: via NPX (recommended) or manually using NPM.
 
-- Node.js and npm installed.
-- Access to an n8n instance (self-hosted or n8n Cloud).
-- An API key for your n8n instance.  See [n8n API Authentication](https://docs.n8n.io/api/authentication/) for instructions on how to create an API key.
+### NPX (Recommended)
 
-### Local Development (npm)
+The easiest way to use the `n8n-workflow-builder` is via NPX. This method doesn't require you to clone the repository or install dependencies manually. You only need to add the server to your MCP configuration file.
 
-1.  **Clone the repository:**
+1.  **Add to MCP Configuration:**
+
+    Open your MCP configuration file (usually `cline_mcp_settings.json`) and add the following entry to the `mcpServers` section:
+
+    ```json
+    {
+      "mcpServers": {
+        "n8n-workflow-builder": {
+          "command": "npx",
+          "args": ["@makafeli/n8n-workflow-builder"],
+          "env": {
+            "N8N_HOST": "http://your-n8n-instance:5678",
+            "N8N_API_KEY": "your-n8n-api-key"
+          }
+        }
+      }
+    }
+    ```
+
+    -   **`N8N_HOST`:** The base URL of your n8n instance (e.g., `http://localhost:5678` or `https://your-n8n-cloud-instance.app.n8n.cloud`).  Include the protocol (`http://` or `https://`) and port if not the default (80/443).
+    -   **`N8N_API_KEY`:** Your n8n API key. Obtain this from your n8n instance: **Settings** > **n8n API** > **Create an API key**.  **Keep this key secure!**
+
+    That's it! The MCP client will automatically handle running the server via NPX when needed.
+
+### NPM (Manual)
+
+If you prefer to install the server manually, follow these steps:
+
+1.  **Prerequisites:**
+
+    -   Node.js and npm installed.
+    -   Access to an n8n instance (self-hosted or n8n Cloud).
+    -   An API key for your n8n instance. See [n8n API Authentication](https://docs.n8n.io/api/authentication/).
+
+2.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/[your-username]/n8n-workflow-builder.git  # Replace [your-username]
+    git clone https://github.com/makafeli/n8n-workflow-builder.git
     cd n8n-workflow-builder
     ```
 
-2.  **Install dependencies:**
+3.  **Install dependencies:**
 
     ```bash
     npm install
     ```
 
-3.  **Install as an MCP server:**
+4.  **Add to MCP Configuration:**
 
-    ```bash
-    npx @makafeli/n8n-workflow-builder
+    Open your MCP configuration file (usually `cline_mcp_settings.json`) and add the following entry to the `mcpServers` section:
+
+    ```json
+    {
+      "mcpServers": {
+        "n8n-workflow-builder": {
+          "command": "node",
+          "args": ["/root/n8n-workflow-builder/src/index.js"],
+          "env": {
+            "N8N_HOST": "http://your-n8n-instance:5678",
+            "N8N_API_KEY": "your-n8n-api-key"
+          }
+        }
+      }
+    }
     ```
-    Then, add the server to your MCP configuration (usually `cline_mcp_settings.json`) as described in the [Configuration](#configuration) section.
 
+    -   **`command`:**  The command to run the server (`node`).
+    -   **`args`:**  The path to the `index.js` file.  **Important:**  Use the correct path to `src/index.js`.
+    -   **`env`:**
+        -   **`N8N_HOST`:** The base URL of your n8n instance (see NPX instructions above).
+        -   **`N8N_API_KEY`:** Your n8n API key (see NPX instructions above).
 
-3.  **Start the server:**
+5.  **Start the server:**
 
     ```bash
     npm start
@@ -78,7 +125,7 @@ A Model Context Protocol (MCP) server for programmatically creating and managing
 
 ## Usage
 
-The server provides the following tools, which can be accessed through an MCP client (like Claude Desktop with the Smithery integration).  All tools require that you have configured the `N8N_HOST` and `N8N_API_KEY` environment variables (see [Configuration](#configuration)).
+The server provides the following tools, which can be accessed through an MCP client (like Claude Desktop with the Smithery integration). All tools require that you have configured the `N8N_HOST` and `N8N_API_KEY` environment variables (see [Configuration](#installation-and-configuration)).
 
 ### `create_workflow`
 
@@ -229,35 +276,6 @@ Deletes a workflow by its ID.
 
 **Example Output:**
 The response from the n8n API confirming deletion (usually an empty object or a success message).
-
-## Configuration
-
-To use this MCP server, you need to add it to your MCP configuration file (usually `cline_mcp_settings.json`) and provide the necessary environment variables.
-
-```json
-{
-  "n8n-workflow-builder": {
-    "command": "node",
-    "args": ["/root/n8n-workflow-builder/src/index.js"],
-    "env": {
-      "N8N_HOST": "http://your-n8n-instance:5678",
-      "N8N_API_KEY": "your-n8n-api-key"
-    }
-  }
-}
-```
-
--   **`command`:**  The command to run the server.  This should be `node`.
--   **`args`:**  The path to the `index.js` file.  **Important:**  This should point to the `src/index.js` file, *not* a `dist` directory (which doesn't exist in this project).
--   **`env`:**  Environment variables.
-    -   **`N8N_HOST`:**  The base URL of your n8n instance.  This should include the protocol (`http://` or `https://`) and the port number if it's not the default (80 for HTTP, 443 for HTTPS).  Examples:
-        -   `http://localhost:5678` (for a local n8n instance running on the default port)
-        -   `https://your-n8n-cloud-instance.app.n8n.cloud` (for an n8n Cloud instance)
-    -   **`N8N_API_KEY`:** Your n8n API key.  To obtain your API key:
-        1.  Log in to your n8n instance.
-        2.  Go to **Settings** > **n8n API**.
-        3.  Select **Create an API key**.
-        4.  Copy the generated key and paste it here.  **Keep this key secure!**
 
 ## Troubleshooting
 
