@@ -1,6 +1,6 @@
 {
   "name": "@makafeli/n8n-workflow-builder",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "start": "node src/index.cjs"
   },
