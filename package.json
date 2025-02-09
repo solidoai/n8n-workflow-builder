@@ -1,11 +1,10 @@
 {
   "name": "@makafeli/n8n-workflow-builder",
   "version": "0.2.1",
-    "type": "module",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.cjs"
   },
-  "dependencies": {
+    "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
@@ -16,7 +15,7 @@
         "access": "public"
     }
 ,
-  "bin": {
-    "n8n-workflow-builder": "src/index.js"
+    "bin": {
+    "n8n-workflow-builder": "src/index.cjs"
   }
 }

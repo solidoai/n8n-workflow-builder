@@ -18,4 +18,4 @@ install:
       package: "@makafeli/n8n-workflow-builder"
       command: n8n-workflow-builder
       args: []
-      env: {}
+      env:{}

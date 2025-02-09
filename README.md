@@ -109,8 +109,8 @@ If you prefer to install the server manually, follow these steps:
     }
     ```
 
-    -   **`command`:**  The command to run the server (`npx`).
-    -   **`args`:**  The path to the `index.js` file.  **Important:**  Use the correct path to `src/index.js`.
+    -   **`command`:**  The command to run the server (`node`).
+    -   **`args`:**  The path to the `index.cjs` file.  **Important:**  Use the correct path to `src/index.cjs`.
     -   **`env`:**
         -   **`N8N_HOST`:** The base URL of your n8n instance (see NPX instructions above).
         -   **`N8N_API_KEY`:** Your n8n API key (see NPX instructions above).
