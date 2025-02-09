@@ -47,7 +47,7 @@ The easiest way to use the `n8n-workflow-builder` is via NPX. This method doesn'
 
     Open your MCP configuration file (usually `cline_mcp_settings.json`) and add the following entry to the `mcpServers` section:
 
-    ```json
+```json
     {
       "mcpServers": {
         "n8n-workflow-builder": {
@@ -60,7 +60,7 @@ The easiest way to use the `n8n-workflow-builder` is via NPX. This method doesn'
         }
       }
     }
-    ```
+```
 
     -   **`N8N_HOST`:** The base URL of your n8n instance (e.g., `http://localhost:5678` or `https://your-n8n-cloud-instance.app.n8n.cloud`).  Include the protocol (`http://` or `https://`) and port if not the default (80/443).
     -   **`N8N_API_KEY`:** Your n8n API key. Obtain this from your n8n instance: **Settings** > **n8n API** > **Create an API key**.  **Keep this key secure!**
@@ -92,7 +92,7 @@ If you prefer to install the server manually, follow these steps:
 
 4.  **Add to MCP Configuration:**
 
-    Open your MCP configuration file (usually `cline_mcp_settings.json`) and add the following entry to the `mcpServers` section:
+   Open your MCP configuration file (usually `cline_mcp_settings.json`) and add the following entry to the `mcpServers` section:
 
     ```json
     {
