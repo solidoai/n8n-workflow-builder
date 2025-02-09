@@ -60,7 +60,7 @@ class N8NWorkflowBuilder {
       nodes: this.nodes,
       connections: { main: [] }
     };
-    
+
     for (const conn of this.connections) {
       const connection: WorkflowConnection = {
         node: conn.target_node,
@@ -71,7 +71,7 @@ class N8NWorkflowBuilder {
       };
       workflow.connections.main.push(connection);
     }
-    
+
     return workflow;
   }
 }
@@ -165,7 +165,7 @@ class N8NWorkflowServer {
           return obj &&
             typeof obj === 'object' &&
             Array.isArray(obj.nodes) &&
-            obj.nodes.every((node: any) => 
+            obj.nodes.every((node: any) =>
               typeof node === 'object' &&
               typeof node.type === 'string' &&
               typeof node.name === 'string'
@@ -187,7 +187,7 @@ class N8NWorkflowServer {
             'Invalid workflow specification: must include nodes array with type and name properties'
           );
         }
-        
+
         const { nodes, connections } = args;
 
         for (const node of nodes) {
