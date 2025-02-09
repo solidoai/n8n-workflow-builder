@@ -83,6 +83,7 @@ class N8NWorkflowServer {
 
     async createWorkflow(workflowData) {
         try {
+            console.log('Creating workflow with data:', JSON.stringify(workflowData, null, 2));
             const response = await axios.post(`${this.n8nHost}/api/v1/workflows`, workflowData, {
                 headers: {
                     'X-N8N-API-KEY': this.n8nApiKey
@@ -99,6 +100,7 @@ class N8NWorkflowServer {
     }
     async updateWorkflow(id, workflowData) {
         try {
+            console.log(`Updating workflow ${id} with data:`, JSON.stringify(workflowData, null, 2));
             const response = await axios.put(`${this.n8nHost}/api/v1/workflows/${id}`, workflowData, {
                 headers: {
                     'X-N8N-API-KEY': this.n8nApiKey
@@ -115,6 +117,7 @@ class N8NWorkflowServer {
     }
     async activateWorkflow(id) {
         try {
+            console.log(`Activating workflow ${id}`);
             const response = await axios.post(`${this.n8nHost}/api/v1/workflows/${id}/activate`, {}, {
                 headers: {
                     'X-N8N-API-KEY': this.n8nApiKey
@@ -131,6 +134,7 @@ class N8NWorkflowServer {
     }
     async deactivateWorkflow(id) {
         try {
+            console.log(`Deactivating workflow ${id}`);
             const response = await axios.post(`${this.n8nHost}/api/v1/workflows/${id}/deactivate`, {}, {
                 headers: {
                     'X-N8N-API-KEY': this.n8nApiKey
@@ -147,6 +151,7 @@ class N8NWorkflowServer {
     }
     async getWorkflow(id) {
         try {
+            console.log(`Getting workflow ${id}`);
             const response = await axios.get(`${this.n8nHost}/api/v1/workflows/${id}`, {
                 headers: {
                     'X-N8N-API-KEY': this.n8nApiKey
@@ -163,6 +168,7 @@ class N8NWorkflowServer {
     }
     async deleteWorkflow(id) {
         try {
+            console.log(`Deleting workflow ${id}`);
             const response = await axios.delete(`${this.n8nHost}/api/v1/workflows/${id}`, {
                 headers: {
                     'X-N8N-API-KEY': this.n8nApiKey
