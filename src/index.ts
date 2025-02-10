@@ -30,7 +30,7 @@ class N8NWorkflowServer {
   }
 
   private setupToolHandlers() {
-    // Register available tools using the local schemas
+    // Register available tools using the local schemas and return an array of tool definitions.
     this.server.setRequestHandler(ListToolsRequestSchema, async (req: any) => {
       console.log("listTools handler invoked with request:", req);
       return {

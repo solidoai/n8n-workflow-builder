@@ -19,7 +19,7 @@ class N8NWorkflowServer {
         this.server.onerror = (error) => console.error('[MCP Error]', error);
     }
     setupToolHandlers() {
-        // Register available tools using the local schemas
+        // Register available tools using the local schemas and return an array of tool definitions.
         this.server.setRequestHandler(sdk_schemas_1.ListToolsRequestSchema, async (req) => {
             console.log("listTools handler invoked with request:", req);
             return {

@@ -1,6 +1,6 @@
 {
   "name": "@makafeli/n8n-workflow-builder",
-  "version": "0.2.5",
+  "version": "0.2.4",
   "scripts": {
     "clean": "rm -rf build",
     "build": "tsc",
