@@ -1,4 +1,4 @@
-declare module '@modelcontextprotocol/sdk/server' {
+declare module '@modelcontextprotocol/sdk' {
   export class Server {
     constructor(info: { name: string; version: string }, config: { capabilities: { tools: any; resources: any } });
     setRequestHandler(schema: any, handler: (request: any) => Promise<any>): void;
@@ -7,7 +7,7 @@ declare module '@modelcontextprotocol/sdk/server' {
   }
 }
 
-declare module '@modelcontextprotocol/sdk/server/stdio' {
+declare module '@modelcontextprotocol/sdk/stdio' {
   export class StdioServerTransport {
     constructor();
   }
@@ -25,3 +25,5 @@ declare module '@modelcontextprotocol/sdk/types' {
     InternalError: string;
   };
 }
+
+export {};

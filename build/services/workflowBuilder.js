@@ -10,7 +10,7 @@ class WorkflowBuilder {
     }
     addNode(node) {
         if (!node.position) {
-            node.position = Object.assign({}, this.nextPosition);
+            node.position = { ...this.nextPosition };
             this.nextPosition = (0, positioning_1.calculateNextPosition)(this.nextPosition);
         }
         this.nodes.push(node);
