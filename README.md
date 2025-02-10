@@ -10,47 +10,57 @@ This version exclusively supports **npm** for package management and running the
 - Node.js (v14+ recommended)
 - npm
 
-## Installation
+## Extensive Installation Guide
 
-1. Clone the repository.
-2. Navigate to the project directory:
-   ```
-   cd /root/n8n-workflow-builder
-   ```
-3. Install the dependencies:
-   ```
-   npm install
-   ```
+### 1. Clone the Repository
 
-## Build
+Clone the repository from your preferred source. For example:
 
-Before running the server, rebuild the project using:
-```
-npm run clean && npm run build
+```bash
+git clone https://github.com/yourusername/n8n-workflow-builder.git
 ```
 
-## Running the MCP Server
+Then, navigate to the project directory:
 
-Start the server using:
+```bash
+cd /root/n8n-workflow-builder
 ```
-npm start
+
+### 2. Install Dependencies
+
+Install the necessary dependencies using npm:
+
+```bash
+npm install
 ```
 
-The server will start and connect via stdio. Use your MCP client (configured via your `cline_mcp_settings.json` file) to view and interact with the available tools.
+This command will download and install all required packages as defined in the `package.json` file.
 
-## Available Tools
+### 3. Build and Test
 
-The following tools are defined in the server and can be accessed through your MCP client:
+For testing and getting the server online, use the following commands:
 
-- **list_workflows**: Lists all workflows from n8n.
-- **create_workflow**: Creates a new workflow in n8n.
-- **get_workflow**: Retrieves a workflow by its ID.
-- **update_workflow**: Updates an existing workflow.
-- **delete_workflow**: Deletes a workflow by its ID.
-- **activate_workflow**: Activates a workflow by its ID.
-- **deactivate_workflow**: Deactivates a workflow by its ID.
+- **Build the project:**  
+  This compiles the TypeScript files and produces the executable JavaScript in the `build` directory.
+  
+  ```bash
+  npm run build
+  ```
 
-## Configuration
+- **Start the MCP Server:**  
+  Launch the server using:
+  
+  ```bash
+  npm start
+  ```
+
+The server will start and connect via stdio. You can check the console to see messages confirming that the server has started correctly.
+
+### 4. Deployment
+
+For testing purposes and to get the server online, use the build and start commands mentioned above. This basic workflow (install, build, start) is currently the recommended method.
+
+### 5. Additional Configuration
 
 Server configuration is managed via the `cline_mcp_settings.json` file. Ensure that the following environment variables are correctly set:
 
@@ -83,10 +93,32 @@ Example configuration in `cline_mcp_settings.json`:
 }
 ```
 
+## Available Tools
+
+The following tools are defined in the server and can be accessed through your MCP client:
+
+- **list_workflows**: Lists all workflows from n8n.
+- **create_workflow**: Creates a new workflow in n8n.
+- **get_workflow**: Retrieves a workflow by its ID.
+- **update_workflow**: Updates an existing workflow.
+- **delete_workflow**: Deletes a workflow by its ID.
+- **activate_workflow**: Activates a workflow by its ID.
+- **deactivate_workflow**: Deactivates a workflow by its ID.
+
+## Troubleshooting
+
+- Ensure you are using npm (this version does not support npx).
+- If you encounter any issues, try cleaning the build directory and rebuilding:
+  ```bash
+  npm run clean && npm run build
+  ```
+- Verify that your environment variables in `cline_mcp_settings.json` are correct.
+
 ## Future Enhancements
 
 - Reintroduction of npx support.
 - Additional tools and workflow features.
+- Further enhancements to deployment and scaling.
 
 ## License
 
