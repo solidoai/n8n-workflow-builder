@@ -10,10 +10,11 @@ console.log("ListToolsRequestSchema:", ListToolsRequestSchema);
 console.log("CallToolRequestSchema:", CallToolRequestSchema);
 
 if (!ListToolsRequestSchema) {
-    console.error("ListToolsRequestSchema is undefined!");
+  console.error("ListToolsRequestSchema is undefined!");
 }
+
 if (!CallToolRequestSchema) {
-    console.error("CallToolRequestSchema is undefined!");
+  console.error("CallToolRequestSchema is undefined!");
 }
 
 class N8NWorkflowServer {
@@ -30,91 +31,110 @@ class N8NWorkflowServer {
 
   private setupToolHandlers() {
     // Register available tools using the local schemas
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        {
-          name: 'list_workflows',
-          enabled: true,
-          description: 'List all workflows from n8n',
-          inputSchema: { type: 'object', properties: {} }
-        },
-        {
-          name: 'create_workflow',
-          enabled: true,
-          description: 'Create a new workflow in n8n',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              name: { type: 'string' },
-              nodes: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    type: { type: 'string' },
-                    name: { type: 'string' },
-                    parameters: { type: 'object' }
-                  },
-                  required: ['type', 'name']
+    this.server.setRequestHandler(ListToolsRequestSchema, async (req: any) => {
+      console.log("listTools handler invoked with request:", req);
+      return {
+        tools: [
+          {
+            name: 'list_workflows',
+            enabled: true,
+            description: 'List all workflows from n8n',
+            inputSchema: { type: 'object', properties: {} }
+          },
+          {
+            name: 'create_workflow',
+            enabled: true,
+            description: 'Create a new workflow in n8n',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                nodes: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      type: { type: 'string' },
+                      name: { type: 'string' },
+                      parameters: { type: 'object' }
+                    },
+                    required: ['type', 'name']
+                  }
+                },
+                connections: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      source: { type: 'string' },
+                      target: { type: 'string' },
+                      sourceOutput: { type: 'number', default: 0 },
+                      targetInput: { type: 'number', default: 0 }
+                    },
+                    required: ['source', 'target']
+                  }
                 }
               },
-              connections: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    source: { type: 'string' },
-                    target: { type: 'string' },
-                    sourceOutput: { type: 'number', default: 0 },
-                    targetInput: { type: 'number', default: 0 }
-                  },
-                  required: ['source', 'target']
-                }
-              }
-            },
-            required: ['nodes']
+              required: ['nodes']
+            }
+          },
+          {
+            name: 'get_workflow',
+            enabled: true,
+            description: 'Get a workflow by ID',
+            inputSchema: {
+              type: 'object',
+              properties: { id: { type: 'string' } },
+              required: ['id']
+            }
+          },
+          {
+            name: 'update_workflow',
+            enabled: true,
+            description: 'Update an existing workflow',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                nodes: { type: 'array' },
+                connections: { type: 'array' }
+              },
+              required: ['id', 'nodes']
+            }
+          },
+          {
+            name: 'delete_workflow',
+            enabled: true,
+            description: 'Delete a workflow by ID',
+            inputSchema: {
+              type: 'object',
+              properties: { id: { type: 'string' } },
+              required: ['id']
+            }
+          },
+          {
+            name: 'activate_workflow',
+            enabled: true,
+            description: 'Activate a workflow by ID',
+            inputSchema: {
+              type: 'object',
+              properties: { id: { type: 'string' } },
+              required: ['id']
+            }
+          },
+          {
+            name: 'deactivate_workflow',
+            enabled: true,
+            description: 'Deactivate a workflow by ID',
+            inputSchema: {
+              type: 'object',
+              properties: { id: { type: 'string' } },
+              required: ['id']
+            }
           }
-        },
-        {
-          name: 'get_workflow',
-          enabled: true,
-          description: 'Get a workflow by ID',
-          inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
-        },
-        {
-          name: 'update_workflow',
-          enabled: true,
-          description: 'Update an existing workflow',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              nodes: { type: 'array' },
-              connections: { type: 'array' }
-            },
-            required: ['id', 'nodes']
-          }
-        },
-        {
-          name: 'delete_workflow',
-          enabled: true,
-          description: 'Delete a workflow by ID',
-          inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
-        },
-        {
-          name: 'activate_workflow',
-          enabled: true,
-          description: 'Activate a workflow by ID',
-          inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
-        },
-        {
-          name: 'deactivate_workflow',
-          enabled: true,
-          description: 'Deactivate a workflow by ID',
-          inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] }
-        }
-      ]
-    }));
+        ]
+      };
+    });
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
       // Simplified handler for testing purposes
