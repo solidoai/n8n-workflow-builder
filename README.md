@@ -17,7 +17,7 @@ This version exclusively supports **npm** for package management and running the
 Clone the repository from your preferred source. For example:
 
 ```bash
-git clone https://github.com/yourusername/n8n-workflow-builder.git
+git clone https://github.com/makafeli/n8n-workflow-builder.git
 ```
 
 Then, navigate to the project directory:
