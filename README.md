@@ -75,7 +75,7 @@ Example configuration in `cline_mcp_settings.json`:
     "command": "node",
     "args": ["/root/n8n-workflow-builder/build/index.js"],
     "env": {
-      "N8N_HOST": "https://n8n.yasin.nu/api/v1/",
+      "N8N_HOST": "https://n8n.io/api/v1/",
       "N8N_API_KEY": "YOUR_N8N_API_KEY_HERE"
     },
     "disabled": false,
