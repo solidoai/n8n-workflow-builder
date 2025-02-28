@@ -29,7 +29,7 @@ class N8NWorkflowServer {
 
   constructor() {
     this.server = new Server(
-      { name: 'n8n-workflow-builder', version: '0.2.0' },
+      { name: 'n8n-workflow-builder', version: '0.3.0' },
       { capabilities: { tools: {}, resources: {} } }
     );
     this.setupToolHandlers();
