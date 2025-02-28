@@ -32,6 +32,25 @@ function handleApiError(context: string, error: unknown): never {
   throw error;
 }
 
+/**
+ * Helper function to build a URL with query parameters
+ * @param basePath The base API path
+ * @param params An object containing the query parameters
+ * @returns The complete URL with query parameters
+ */
+function buildUrl(basePath: string, params: Record<string, any> = {}): string {
+  const urlParams = new URLSearchParams();
+  
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined) {
+      urlParams.append(key, value.toString());
+    }
+  }
+  
+  const queryString = urlParams.toString();
+  return `${basePath}${queryString ? '?' + queryString : ''}`;
+}
+
 export async function createWorkflow(workflow: WorkflowSpec): Promise<N8NWorkflowResponse> {
   try {
     console.log('Creating workflow');
@@ -111,32 +130,22 @@ export async function listWorkflows(): Promise<N8NWorkflowResponse[]> {
 
 // Execution API Methods
 
+/**
+ * List workflow executions with optional filtering
+ * 
+ * @param options Filtering and pagination options
+ * @returns A paginated list of executions
+ * 
+ * Pagination: This endpoint uses cursor-based pagination. To retrieve the next page:
+ * 1. Check if the response contains a nextCursor property
+ * 2. If present, use it in the next request as the cursor parameter
+ * 3. Continue until nextCursor is no longer returned
+ */
 export async function listExecutions(options: ExecutionListOptions = {}): Promise<N8NExecutionListResponse> {
   try {
     console.log('Listing executions');
-    const params = new URLSearchParams();
     
-    if (options.includeData !== undefined) {
-      params.append('includeData', options.includeData.toString());
-    }
-    if (options.status) {
-      params.append('status', options.status);
-    }
-    if (options.workflowId) {
-      params.append('workflowId', options.workflowId);
-    }
-    if (options.projectId) {
-      params.append('projectId', options.projectId);
-    }
-    if (options.limit) {
-      params.append('limit', options.limit.toString());
-    }
-    if (options.cursor) {
-      params.append('cursor', options.cursor);
-    }
-
-    const queryString = params.toString();
-    const url = `/executions${queryString ? '?' + queryString : ''}`;
+    const url = buildUrl('/executions', options);
     
     console.log(`Fetching executions from: ${url}`);
     const response = await api.get(url);
@@ -147,10 +156,17 @@ export async function listExecutions(options: ExecutionListOptions = {}): Promis
   }
 }
 
+/**
+ * Get details of a specific execution
+ * 
+ * @param id The execution ID to retrieve
+ * @param includeData Whether to include the full execution data (may be large)
+ * @returns The execution details
+ */
 export async function getExecution(id: number, includeData?: boolean): Promise<N8NExecutionResponse> {
   try {
     console.log(`Getting execution with ID: ${id}`);
-    const url = `/executions/${id}${includeData ? '?includeData=true' : ''}`;
+    const url = buildUrl(`/executions/${id}`, includeData ? { includeData: true } : {});
     const response = await api.get(url);
     console.log('Response:', response.status, response.statusText);
     return response.data;
@@ -159,6 +175,12 @@ export async function getExecution(id: number, includeData?: boolean): Promise<N
   }
 }
 
+/**
+ * Delete an execution by ID
+ * 
+ * @param id The execution ID to delete
+ * @returns The response from the deletion operation
+ */
 export async function deleteExecution(id: number): Promise<N8NExecutionResponse> {
   try {
     console.log(`Deleting execution with ID: ${id}`);
