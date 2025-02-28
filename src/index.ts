@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { Server, McpError, ErrorCode } from '@modelcontextprotocol/sdk';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/stdio';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from './sdk-schemas';
 import * as n8nApi from './services/n8nApi';
 import { WorkflowBuilder } from './services/workflowBuilder';
@@ -137,8 +138,128 @@ class N8NWorkflowServer {
     });
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
-      // Simplified handler for testing purposes
-      return { content: [{ type: 'text', text: 'Tool call handled' }] };
+      console.log("callTool handler invoked with request:", request);
+      
+      try {
+        const { name, arguments: args } = request.params;
+        
+        switch (name) {
+          case 'list_workflows':
+            const workflows = await n8nApi.listWorkflows();
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(workflows, null, 2) 
+              }]
+            };
+            
+          case 'create_workflow':
+            if (!args.name) {
+              args.name = 'New Workflow';
+            }
+            
+            const workflowSpec = validateWorkflowSpec({
+              name: args.name,
+              nodes: args.nodes as any[],
+              connections: args.connections || []
+            });
+            
+            const createdWorkflow = await n8nApi.createWorkflow(workflowSpec);
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(createdWorkflow, null, 2) 
+              }]
+            };
+            
+          case 'get_workflow':
+            if (!args.id) {
+              throw new McpError(ErrorCode.InvalidParams, 'Workflow ID is required');
+            }
+            
+            const workflow = await n8nApi.getWorkflow(args.id);
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(workflow, null, 2) 
+              }]
+            };
+            
+          case 'update_workflow':
+            if (!args.id) {
+              throw new McpError(ErrorCode.InvalidParams, 'Workflow ID is required');
+            }
+            
+            const updatedWorkflowSpec = validateWorkflowSpec({
+              nodes: args.nodes as any[],
+              connections: args.connections || []
+            });
+            
+            const updatedWorkflow = await n8nApi.updateWorkflow(args.id, updatedWorkflowSpec);
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(updatedWorkflow, null, 2) 
+              }]
+            };
+            
+          case 'delete_workflow':
+            if (!args.id) {
+              throw new McpError(ErrorCode.InvalidParams, 'Workflow ID is required');
+            }
+            
+            const deleteResult = await n8nApi.deleteWorkflow(args.id);
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(deleteResult, null, 2) 
+              }]
+            };
+            
+          case 'activate_workflow':
+            if (!args.id) {
+              throw new McpError(ErrorCode.InvalidParams, 'Workflow ID is required');
+            }
+            
+            const activatedWorkflow = await n8nApi.activateWorkflow(args.id);
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(activatedWorkflow, null, 2) 
+              }]
+            };
+            
+          case 'deactivate_workflow':
+            if (!args.id) {
+              throw new McpError(ErrorCode.InvalidParams, 'Workflow ID is required');
+            }
+            
+            const deactivatedWorkflow = await n8nApi.deactivateWorkflow(args.id);
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(deactivatedWorkflow, null, 2) 
+              }]
+            };
+            
+          default:
+            throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
+        }
+      } catch (error) {
+        console.error('Error handling tool call:', error);
+        
+        if (error instanceof McpError) {
+          throw error;
+        }
+        
+        return {
+          content: [{ 
+            type: 'text', 
+            text: `Error: ${error instanceof Error ? error.message : String(error)}` 
+          }],
+          isError: true
+        };
+      }
     });
   }
 
