@@ -2,7 +2,13 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from './sdk-schemas';
+import { 
+  CallToolRequestSchema, 
+  ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+  ListResourceTemplatesRequestSchema 
+} from './sdk-schemas';
 import * as n8nApi from './services/n8nApi';
 import { WorkflowBuilder } from './services/workflowBuilder';
 import { validateWorkflowSpec } from './utils/validation';
@@ -27,7 +33,183 @@ class N8NWorkflowServer {
       { capabilities: { tools: {}, resources: {} } }
     );
     this.setupToolHandlers();
+    this.setupResourceHandlers();
     this.server.onerror = (error: any) => console.error('[MCP Error]', error);
+  }
+
+  private setupResourceHandlers() {
+    // List available resources
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+      console.log("listResources handler invoked");
+      return {
+        resources: [
+          {
+            uri: '/workflows',
+            name: 'Workflows List',
+            description: 'List of all available workflows',
+            mimeType: 'application/json'
+          },
+          {
+            uri: '/execution-stats',
+            name: 'Execution Statistics',
+            description: 'Summary statistics of workflow executions',
+            mimeType: 'application/json'
+          }
+        ]
+      };
+    });
+
+    // List resource templates
+    this.server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
+      console.log("listResourceTemplates handler invoked");
+      return {
+        templates: [
+          {
+            uriTemplate: '/workflows/{id}',
+            name: 'Workflow Details',
+            description: 'Details of a specific workflow',
+            mimeType: 'application/json',
+            parameters: [
+              {
+                name: 'id',
+                description: 'The ID of the workflow',
+                required: true
+              }
+            ]
+          },
+          {
+            uriTemplate: '/executions/{id}',
+            name: 'Execution Details',
+            description: 'Details of a specific execution',
+            mimeType: 'application/json',
+            parameters: [
+              {
+                name: 'id',
+                description: 'The ID of the execution',
+                required: true
+              }
+            ]
+          }
+        ]
+      };
+    });
+
+    // Read a specific resource
+    this.server.setRequestHandler(ReadResourceRequestSchema, async (request: any) => {
+      const { uri } = request.params;
+      console.log(`readResource handler invoked for URI: ${uri}`);
+      
+      // Static resources
+      if (uri === '/workflows') {
+        const workflows = await n8nApi.listWorkflows();
+        return {
+          content: {
+            type: 'text',
+            text: JSON.stringify(workflows, null, 2),
+            mimeType: 'application/json'
+          }
+        };
+      }
+      
+      if (uri === '/execution-stats') {
+        try {
+          const executions = await n8nApi.listExecutions({ limit: 100 });
+          
+          // Calculate statistics
+          const total = executions.data.length;
+          const succeeded = executions.data.filter(exec => exec.finished && exec.mode !== 'error').length;
+          const failed = executions.data.filter(exec => exec.mode === 'error').length;
+          const waiting = executions.data.filter(exec => !exec.finished).length;
+          
+          // Calculate average execution time for finished executions
+          let totalTimeMs = 0;
+          let finishedCount = 0;
+          for (const exec of executions.data) {
+            if (exec.finished && exec.startedAt && exec.stoppedAt) {
+              const startTime = new Date(exec.startedAt).getTime();
+              const endTime = new Date(exec.stoppedAt).getTime();
+              totalTimeMs += (endTime - startTime);
+              finishedCount++;
+            }
+          }
+          
+          const avgExecutionTimeMs = finishedCount > 0 ? totalTimeMs / finishedCount : 0;
+          const avgExecutionTime = `${(avgExecutionTimeMs / 1000).toFixed(2)}s`;
+          
+          return {
+            content: {
+              type: 'text',
+              text: JSON.stringify({
+                total,
+                succeeded,
+                failed,
+                waiting,
+                avgExecutionTime
+              }, null, 2),
+              mimeType: 'application/json'
+            }
+          };
+        } catch (error) {
+          console.error('Error generating execution stats:', error);
+          return {
+            content: {
+              type: 'text',
+              text: JSON.stringify({
+                total: 0,
+                succeeded: 0,
+                failed: 0,
+                waiting: 0,
+                avgExecutionTime: '0s',
+                error: 'Failed to retrieve execution statistics'
+              }, null, 2),
+              mimeType: 'application/json'
+            }
+          };
+        }
+      }
+      
+      
+      // Dynamic resource template matching
+      const workflowMatch = uri.match(/^\/workflows\/(.+)$/);
+      if (workflowMatch) {
+        const id = workflowMatch[1];
+        try {
+          const workflow = await n8nApi.getWorkflow(id);
+          return {
+            content: {
+              type: 'text',
+              text: JSON.stringify(workflow, null, 2),
+              mimeType: 'application/json'
+            }
+          };
+        } catch (error) {
+          throw new McpError(ErrorCode.InvalidParams, `Workflow with ID ${id} not found`);
+        }
+      }
+      
+      const executionMatch = uri.match(/^\/executions\/(.+)$/);
+      if (executionMatch) {
+        const id = parseInt(executionMatch[1], 10);
+        if (isNaN(id)) {
+          throw new McpError(ErrorCode.InvalidParams, 'Execution ID must be a number');
+        }
+        
+        try {
+          const execution = await n8nApi.getExecution(id, true);
+          return {
+            content: {
+              type: 'text',
+              text: JSON.stringify(execution, null, 2),
+              mimeType: 'application/json'
+            }
+          };
+        } catch (error) {
+          throw new McpError(ErrorCode.InvalidParams, `Execution with ID ${id} not found`);
+        }
+      }
+      
+      throw new McpError(ErrorCode.InvalidParams, `Resource not found: ${uri}`);
+    });
   }
 
   private setupToolHandlers() {
