@@ -1,3 +1,5 @@
+import { ExecutionData, ExecutionMode } from './execution';
+
 export interface N8NWorkflowResponse {
   id: string;
   name: string;
@@ -8,25 +10,36 @@ export interface N8NWorkflowResponse {
   updatedAt: string;
 }
 
+/**
+ * Represents a full workflow execution response from n8n API
+ */
 export interface N8NExecutionResponse {
   id: number;
-  data?: object;
+  data?: ExecutionData;
   finished: boolean;
-  mode: 'cli' | 'error' | 'integrated' | 'internal' | 'manual' | 'retry' | 'trigger' | 'webhook';
+  mode: ExecutionMode;
   retryOf?: number | null;
   retrySuccessId?: number | null;
   startedAt: string;
   stoppedAt: string;
   workflowId: number;
   waitTill?: string | null;
-  customData?: object;
+  customData?: {
+    [key: string]: any;
+  };
 }
 
+/**
+ * Response structure when listing executions
+ */
 export interface N8NExecutionListResponse {
   data: N8NExecutionResponse[];
   nextCursor?: string;
 }
 
+/**
+ * Standard error response structure
+ */
 export interface N8NErrorResponse {
   error: string;
 }

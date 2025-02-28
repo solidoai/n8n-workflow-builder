@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { N8N_HOST, N8N_API_KEY } from '../config/constants';
 import { WorkflowSpec } from '../types/workflow';
+import { ExecutionListOptions } from '../types/execution';
 import { N8NWorkflowResponse, N8NExecutionResponse, N8NExecutionListResponse } from '../types/api';
 
 const api = axios.create({
@@ -110,14 +111,7 @@ export async function listWorkflows(): Promise<N8NWorkflowResponse[]> {
 
 // Execution API Methods
 
-export async function listExecutions(options: {
-  includeData?: boolean;
-  status?: 'error' | 'success' | 'waiting';
-  workflowId?: string;
-  projectId?: string;
-  limit?: number;
-  cursor?: string;
-} = {}): Promise<N8NExecutionListResponse> {
+export async function listExecutions(options: ExecutionListOptions = {}): Promise<N8NExecutionListResponse> {
   try {
     console.log('Listing executions');
     const params = new URLSearchParams();
