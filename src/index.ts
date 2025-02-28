@@ -103,11 +103,12 @@ class N8NWorkflowServer {
       if (uri === '/workflows') {
         const workflows = await n8nApi.listWorkflows();
         return {
-          content: {
+          contents: [{
             type: 'text',
             text: JSON.stringify(workflows, null, 2),
-            mimeType: 'application/json'
-          }
+            mimeType: 'application/json',
+            uri: '/workflows'
+          }]
         };
       }
       
@@ -137,7 +138,7 @@ class N8NWorkflowServer {
           const avgExecutionTime = `${(avgExecutionTimeMs / 1000).toFixed(2)}s`;
           
           return {
-            content: {
+            contents: [{
               type: 'text',
               text: JSON.stringify({
                 total,
@@ -146,13 +147,14 @@ class N8NWorkflowServer {
                 waiting,
                 avgExecutionTime
               }, null, 2),
-              mimeType: 'application/json'
-            }
+              mimeType: 'application/json',
+              uri: '/execution-stats'
+            }]
           };
         } catch (error) {
           console.error('Error generating execution stats:', error);
           return {
-            content: {
+            contents: [{
               type: 'text',
               text: JSON.stringify({
                 total: 0,
@@ -162,8 +164,9 @@ class N8NWorkflowServer {
                 avgExecutionTime: '0s',
                 error: 'Failed to retrieve execution statistics'
               }, null, 2),
-              mimeType: 'application/json'
-            }
+              mimeType: 'application/json',
+              uri: '/execution-stats'
+            }]
           };
         }
       }
@@ -176,11 +179,12 @@ class N8NWorkflowServer {
         try {
           const workflow = await n8nApi.getWorkflow(id);
           return {
-            content: {
+            contents: [{
               type: 'text',
               text: JSON.stringify(workflow, null, 2),
-              mimeType: 'application/json'
-            }
+              mimeType: 'application/json',
+              uri: uri
+            }]
           };
         } catch (error) {
           throw new McpError(ErrorCode.InvalidParams, `Workflow with ID ${id} not found`);
@@ -197,11 +201,12 @@ class N8NWorkflowServer {
         try {
           const execution = await n8nApi.getExecution(id, true);
           return {
-            content: {
+            contents: [{
               type: 'text',
               text: JSON.stringify(execution, null, 2),
-              mimeType: 'application/json'
-            }
+              mimeType: 'application/json',
+              uri: uri
+            }]
           };
         } catch (error) {
           throw new McpError(ErrorCode.InvalidParams, `Execution with ID ${id} not found`);
