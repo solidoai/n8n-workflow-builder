@@ -36,6 +36,7 @@ class N8NWorkflowServer {
       console.log("listTools handler invoked with request:", req);
       return {
         tools: [
+          // Workflow Tools
           {
             name: 'list_workflows',
             enabled: true,
@@ -132,6 +133,52 @@ class N8NWorkflowServer {
               properties: { id: { type: 'string' } },
               required: ['id']
             }
+          },
+          
+          // Execution Tools
+          {
+            name: 'list_executions',
+            enabled: true,
+            description: 'List all executions from n8n with optional filters',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                includeData: { type: 'boolean' },
+                status: { 
+                  type: 'string',
+                  enum: ['error', 'success', 'waiting']
+                },
+                workflowId: { type: 'string' },
+                projectId: { type: 'string' },
+                limit: { type: 'number' },
+                cursor: { type: 'string' }
+              }
+            }
+          },
+          {
+            name: 'get_execution',
+            enabled: true,
+            description: 'Get details of a specific execution by ID',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                id: { type: 'number' },
+                includeData: { type: 'boolean' }
+              },
+              required: ['id']
+            }
+          },
+          {
+            name: 'delete_execution',
+            enabled: true,
+            description: 'Delete an execution by ID',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                id: { type: 'number' }
+              },
+              required: ['id']
+            }
           }
         ]
       };
@@ -144,6 +191,7 @@ class N8NWorkflowServer {
         const { name, arguments: args } = request.params;
         
         switch (name) {
+          // Workflow Tools
           case 'list_workflows':
             const workflows = await n8nApi.listWorkflows();
             return {
@@ -239,6 +287,49 @@ class N8NWorkflowServer {
               content: [{ 
                 type: 'text', 
                 text: JSON.stringify(deactivatedWorkflow, null, 2) 
+              }]
+            };
+          
+          // Execution Tools
+          case 'list_executions':
+            const executions = await n8nApi.listExecutions({
+              includeData: args.includeData,
+              status: args.status,
+              workflowId: args.workflowId,
+              projectId: args.projectId,
+              limit: args.limit,
+              cursor: args.cursor
+            });
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(executions, null, 2) 
+              }]
+            };
+            
+          case 'get_execution':
+            if (!args.id) {
+              throw new McpError(ErrorCode.InvalidParams, 'Execution ID is required');
+            }
+            
+            const execution = await n8nApi.getExecution(args.id, args.includeData);
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(execution, null, 2) 
+              }]
+            };
+            
+          case 'delete_execution':
+            if (!args.id) {
+              throw new McpError(ErrorCode.InvalidParams, 'Execution ID is required');
+            }
+            
+            const deletedExecution = await n8nApi.deleteExecution(args.id);
+            return {
+              content: [{ 
+                type: 'text', 
+                text: JSON.stringify(deletedExecution, null, 2) 
               }]
             };
             

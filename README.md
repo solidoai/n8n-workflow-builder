@@ -97,6 +97,7 @@ Example configuration in `cline_mcp_settings.json`:
 
 The following tools are defined in the server and can be accessed through your MCP client:
 
+### Workflow Management
 - **list_workflows**: Lists all workflows from n8n.
 - **create_workflow**: Creates a new workflow in n8n.
 - **get_workflow**: Retrieves a workflow by its ID.
@@ -104,6 +105,11 @@ The following tools are defined in the server and can be accessed through your M
 - **delete_workflow**: Deletes a workflow by its ID.
 - **activate_workflow**: Activates a workflow by its ID.
 - **deactivate_workflow**: Deactivates a workflow by its ID.
+
+### Execution Management
+- **list_executions**: Lists all workflow executions with optional filters.
+- **get_execution**: Retrieves details of a specific execution by its ID.
+- **delete_execution**: Deletes an execution by its ID.
 
 ## Troubleshooting
 
